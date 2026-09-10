@@ -20,7 +20,6 @@ for real.
 
 - `GET /health` — liveness check
 - `GET /tasks` — list tasks
-- `GET /tasks/:id` — get a single task
 - `POST /tasks` — create a task (`{ "title": "...", "priority": "low"|"medium"|"high" }`)
 - `POST /tasks/:id/complete` — mark a task done
 - `DELETE /tasks/:id` — delete a task
