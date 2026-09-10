@@ -38,18 +38,6 @@ export default {
       return json({ id: result.meta.last_row_id, title: validated.title, priority: validated.priority, done: 0 }, 201);
     }
 
-    if (parts[0] === "tasks" && parts.length === 2 && request.method === "GET") {
-      const id = Number(parts[1]);
-      if (!Number.isInteger(id)) return json({ error: "invalid task id" }, 400);
-      const task = await env.TASKS_DB.prepare(
-        "SELECT id, title, priority, done, created_at FROM tasks WHERE id = ?"
-      )
-        .bind(id)
-        .first();
-      if (!task) return json({ error: "task not found" }, 404);
-      return json(task);
-    }
-
     if (parts[0] === "tasks" && parts[2] === "complete" && request.method === "POST") {
       const id = Number(parts[1]);
       if (!Number.isInteger(id)) return json({ error: "invalid task id" }, 400);
