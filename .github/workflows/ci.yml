@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test
+
+  # Runs the actual Worker locally against a real D1 instance and exercises
+  # every route over real HTTP — not a mock, not just the unit tests above.
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run db:migrate:local
+      - name: Start wrangler dev
+        run: nohup npx wrangler dev --local --port 8788 > wrangler-dev.log 2>&1 &
+      - name: Wait for wrangler dev
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8788/health && exit 0
+            sleep 1
+          done
+          echo "--- wrangler dev log ---"; cat wrangler-dev.log
+          exit 1
+      - name: Exercise the real API
+        run: |
+          set -e
+          curl -sf http://localhost:8788/health | grep '"ok"'
+          ID=$(curl -sf -X POST http://localhost:8788/tasks -H 'content-type: application/json' -d '{"title":"e2e smoke task","priority":"high"}' | node -pe 'JSON.parse(require("fs").readFileSync(0)).id')
+          curl -sf http://localhost:8788/tasks | grep "e2e smoke task"
+          curl -sf -X POST "http://localhost:8788/tasks/$ID/complete" | grep '"done":1'
+          curl -sf -X DELETE "http://localhost:8788/tasks/$ID" -o /dev/null -w '%{http_code}' | grep 204
