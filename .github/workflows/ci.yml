@@ -44,5 +44,6 @@ jobs:
           curl -sf http://localhost:8788/health | grep '"ok"'
           ID=$(curl -sf -X POST http://localhost:8788/tasks -H 'content-type: application/json' -d '{"title":"e2e smoke task","priority":"high"}' | node -pe 'JSON.parse(require("fs").readFileSync(0)).id')
           curl -sf http://localhost:8788/tasks | grep "e2e smoke task"
+          curl -sf "http://localhost:8788/tasks/$ID" | grep "e2e smoke task"
           curl -sf -X POST "http://localhost:8788/tasks/$ID/complete" | grep '"done":1'
           curl -sf -X DELETE "http://localhost:8788/tasks/$ID" -o /dev/null -w '%{http_code}' | grep 204
