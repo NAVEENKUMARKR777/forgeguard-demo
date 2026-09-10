@@ -19,7 +19,7 @@ export default {
 
     if (url.pathname === "/tasks" && request.method === "GET") {
       const { results } = await env.TASKS_DB.prepare(
-        "SELECT id, title, priority, done, created_at FROM tasks ORDER BY id DESC"
+        "SELECT id, title, priority, done, created_at, updated_at FROM tasks ORDER BY id DESC"
       ).all();
       return json(results);
     }
@@ -30,10 +30,11 @@ export default {
       if (isValidationError(validated)) {
         return json({ error: validated.field, message: validated.message }, 400);
       }
+      const now = Date.now();
       const result = await env.TASKS_DB.prepare(
-        "INSERT INTO tasks (title, priority, done, created_at) VALUES (?, ?, 0, ?)"
+        "INSERT INTO tasks (title, priority, done, created_at, updated_at) VALUES (?, ?, 0, ?, ?)"
       )
-        .bind(validated.title, validated.priority, Date.now())
+        .bind(validated.title, validated.priority, now, now)
         .run();
       return json({ id: result.meta.last_row_id, title: validated.title, priority: validated.priority, done: 0 }, 201);
     }
@@ -41,7 +42,7 @@ export default {
     if (parts[0] === "tasks" && parts[2] === "complete" && request.method === "POST") {
       const id = Number(parts[1]);
       if (!Number.isInteger(id)) return json({ error: "invalid task id" }, 400);
-      await env.TASKS_DB.prepare("UPDATE tasks SET done = 1 WHERE id = ?").bind(id).run();
+      await env.TASKS_DB.prepare("UPDATE tasks SET done = 1, updated_at = ? WHERE id = ?").bind(Date.now(), id).run();
       return json({ id, done: 1 });
     }
 
