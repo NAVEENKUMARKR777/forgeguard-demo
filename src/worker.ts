@@ -1,4 +1,5 @@
 import { validateNewTask, isValidationError } from "./tasks";
+import settings from "../config/production/settings.json";
 
 export interface Env {
   TASKS_DB: D1Database;
@@ -19,8 +20,10 @@ export default {
 
     if (url.pathname === "/tasks" && request.method === "GET") {
       const { results } = await env.TASKS_DB.prepare(
-        "SELECT id, title, priority, done, created_at FROM tasks ORDER BY id DESC"
-      ).all();
+        "SELECT id, title, priority, done, created_at FROM tasks ORDER BY id DESC LIMIT ?"
+      )
+        .bind(settings.maxTasksPerRequest)
+        .all();
       return json(results);
     }
 

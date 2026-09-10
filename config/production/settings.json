@@ -1,5 +1,5 @@
 {
-  "maxTasksPerRequest": 100,
+  "maxTasksPerRequest": 500,
   "titleMaxLength": 200,
   "defaultPriority": "medium"
 }
