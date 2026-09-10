@@ -6,6 +6,24 @@ on:
   pull_request:
 
 jobs:
+  # Real deploy on every push to main, so a PR merged through ForgeGuard
+  # (or any other route) actually shows up on the live Worker, not just
+  # on GitHub. Needs CLOUDFLARE_API_TOKEN (Account -> Workers Scripts:
+  # Edit) as a repo secret.
+  deploy:
+    needs: [verify, e2e]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
   verify:
     runs-on: ubuntu-latest
     steps:
