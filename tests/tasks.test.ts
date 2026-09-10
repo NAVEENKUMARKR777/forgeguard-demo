@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateNewTask, isValidationError } from "../src/tasks";
+import { validateNewTask, isValidationError, validateTaskPatch } from "../src/tasks";
 
 describe("validateNewTask", () => {
   it("accepts a valid task with default priority", () => {
@@ -45,5 +45,35 @@ describe("validateNewTask", () => {
   it("rejects a non-object body", () => {
     expect(isValidationError(validateNewTask(null))).toBe(true);
     expect(isValidationError(validateNewTask("just a string"))).toBe(true);
+  });
+});
+
+describe("validateTaskPatch", () => {
+  it("accepts a title-only patch", () => {
+    const result = validateTaskPatch({ title: "Renamed" });
+    expect(isValidationError(result)).toBe(false);
+    if (!isValidationError(result)) expect(result).toEqual({ title: "Renamed" });
+  });
+
+  it("accepts a priority-only patch", () => {
+    const result = validateTaskPatch({ priority: "high" });
+    if (!isValidationError(result)) expect(result).toEqual({ priority: "high" });
+  });
+
+  it("accepts both fields at once", () => {
+    const result = validateTaskPatch({ title: "Renamed", priority: "low" });
+    if (!isValidationError(result)) expect(result).toEqual({ title: "Renamed", priority: "low" });
+  });
+
+  it("rejects an empty patch", () => {
+    expect(isValidationError(validateTaskPatch({}))).toBe(true);
+  });
+
+  it("rejects an invalid priority", () => {
+    expect(isValidationError(validateTaskPatch({ priority: "urgent" }))).toBe(true);
+  });
+
+  it("rejects a blank title", () => {
+    expect(isValidationError(validateTaskPatch({ title: "   " }))).toBe(true);
   });
 });

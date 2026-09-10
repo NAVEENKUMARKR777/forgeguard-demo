@@ -21,6 +21,7 @@ for real.
 - `GET /health` — liveness check
 - `GET /tasks` — list tasks
 - `POST /tasks` — create a task (`{ "title": "...", "priority": "low"|"medium"|"high" }`)
+- `PATCH /tasks/:id` — update a task's `title` and/or `priority`
 - `POST /tasks/:id/complete` — mark a task done
 - `DELETE /tasks/:id` — delete a task
 
