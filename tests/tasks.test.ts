@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateNewTask, isValidationError } from "../src/tasks";
+import { validateNewTask, isValidationError, parseLimit } from "../src/tasks";
 
 describe("validateNewTask", () => {
   it("accepts a valid task with default priority", () => {
@@ -45,5 +45,19 @@ describe("validateNewTask", () => {
   it("rejects a non-object body", () => {
     expect(isValidationError(validateNewTask(null))).toBe(true);
     expect(isValidationError(validateNewTask("just a string"))).toBe(true);
+  });
+});
+
+describe("parseLimit", () => {
+  it("uses the fallback when limit is missing", () => {
+    expect(parseLimit(null, 100)).toBe(100);
+  });
+
+  it("parses a valid numeric limit", () => {
+    expect(parseLimit("25", 100)).toBe(25);
+  });
+
+  it("returns 0 when the caller explicitly asks for 0 results", () => {
+    expect(parseLimit("0", 100)).toBe(0);
   });
 });

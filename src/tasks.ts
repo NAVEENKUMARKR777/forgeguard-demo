@@ -37,3 +37,9 @@ export function validateNewTask(input: unknown): NewTask | ValidationError {
 export function isValidationError(result: NewTask | ValidationError): result is ValidationError {
   return "field" in result;
 }
+
+/** Parses the `?limit=` query param, falling back to `fallback` when it's
+ * missing or not a valid number. */
+export function parseLimit(raw: string | null, fallback: number): number {
+  return Number(raw) || fallback;
+}

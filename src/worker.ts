@@ -1,4 +1,6 @@
-import { validateNewTask, isValidationError } from "./tasks";
+import { validateNewTask, isValidationError, parseLimit } from "./tasks";
+
+const DEFAULT_TASKS_LIMIT = 100;
 
 export interface Env {
   TASKS_DB: D1Database;
@@ -18,9 +20,12 @@ export default {
     }
 
     if (url.pathname === "/tasks" && request.method === "GET") {
+      const limit = parseLimit(url.searchParams.get("limit"), DEFAULT_TASKS_LIMIT);
       const { results } = await env.TASKS_DB.prepare(
-        "SELECT id, title, priority, done, created_at FROM tasks ORDER BY id DESC"
-      ).all();
+        "SELECT id, title, priority, done, created_at FROM tasks ORDER BY id DESC LIMIT ?"
+      )
+        .bind(limit)
+        .all();
       return json(results);
     }
 
