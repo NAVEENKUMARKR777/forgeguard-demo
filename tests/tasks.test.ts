@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateNewTask, isValidationError } from "../src/tasks";
+import { validateNewTask, isValidationError, summarizeTasks } from "../src/tasks";
 
 describe("validateNewTask", () => {
   it("accepts a valid task with default priority", () => {
@@ -45,5 +45,16 @@ describe("validateNewTask", () => {
   it("rejects a non-object body", () => {
     expect(isValidationError(validateNewTask(null))).toBe(true);
     expect(isValidationError(validateNewTask("just a string"))).toBe(true);
+  });
+});
+
+describe("summarizeTasks", () => {
+  it("counts total/done/pending", () => {
+    const stats = summarizeTasks([{ done: 1 }, { done: 0 }, { done: 1 }, { done: 0 }, { done: 0 }]);
+    expect(stats).toEqual({ total: 5, done: 2, pending: 3 });
+  });
+
+  it("handles an empty list", () => {
+    expect(summarizeTasks([])).toEqual({ total: 0, done: 0, pending: 0 });
   });
 });

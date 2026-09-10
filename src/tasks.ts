@@ -37,3 +37,16 @@ export function validateNewTask(input: unknown): NewTask | ValidationError {
 export function isValidationError(result: NewTask | ValidationError): result is ValidationError {
   return "field" in result;
 }
+
+export interface TaskStats {
+  total: number;
+  done: number;
+  pending: number;
+}
+
+/** Pure aggregation over task rows — no D1, testable in plain Node. */
+export function summarizeTasks(rows: { done: number }[]): TaskStats {
+  const total = rows.length;
+  const done = rows.filter((r) => r.done === 1).length;
+  return { total, done, pending: total - done };
+}

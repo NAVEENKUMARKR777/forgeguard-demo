@@ -1,4 +1,4 @@
-import { validateNewTask, isValidationError } from "./tasks";
+import { validateNewTask, isValidationError, summarizeTasks } from "./tasks";
 
 export interface Env {
   TASKS_DB: D1Database;
@@ -15,6 +15,11 @@ export default {
 
     if (url.pathname === "/health") {
       return json({ status: "ok" });
+    }
+
+    if (url.pathname === "/tasks/stats" && request.method === "GET") {
+      const { results } = await env.TASKS_DB.prepare("SELECT done FROM tasks").all<{ done: number }>();
+      return json(summarizeTasks(results));
     }
 
     if (url.pathname === "/tasks" && request.method === "GET") {
